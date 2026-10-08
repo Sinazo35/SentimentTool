@@ -1,0 +1,4 @@
+Flask>=3.0,<4
+vaderSentiment>=3.3.2,<4
+youtube-transcript-api>=1.2,<2
+huggingface_hub>=0.25,<1

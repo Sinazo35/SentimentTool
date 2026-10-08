@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PulseScope sentiment intelligence dashboard">
+  <title>PulseScope — Sentiment Intelligence</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#dashboard" aria-label="PulseScope home">
+        <span class="brand-mark">P</span>
+        <span><strong>PulseScope</strong><small>AI SENTIMENT STUDIO</small></span>
+      </a>
+      <nav class="nav-list" aria-label="Main navigation">
+        <a class="nav-item active" href="#dashboard"><span>⌂</span> Dashboard</a>
+        <a class="nav-item" href="#analyze"><span>◈</span> Analyze content</a>
+        <a class="nav-item" href="#results"><span>▥</span> Results</a>
+        <a class="nav-item" href="#insights"><span>✦</span> Insights</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="status-dot"></div>
+        <div><strong>Local workspace</strong><small>Ready for analysis</small></div>
+      </div>
+    </aside>
+
+    <main class="main-content" id="dashboard">
+      <header class="topbar">
+        <button class="menu-button" id="menuButton" aria-label="Open navigation">☰</button>
+        <div class="topbar-title"><span class="eyebrow">ANALYTICS WORKSPACE</span><h1>Sentiment Intelligence</h1></div>
+        <div class="topbar-actions">
+          <button class="icon-button" id="themeToggle" aria-label="Switch to dark mode" title="Toggle theme"><span id="themeIcon">☾</span></button>
+          <div class="live-pill"><span></span> Local system</div>
+        </div>
+      </header>
+
+      <section class="hero-card">
+        <div>
+          <span class="eyebrow">EMOTION, MADE CLEAR</span>
+          <h2>Understand the emotional tone<br>behind every conversation.</h2>
+          <p>Analyze YouTube captions or paste transcript text with VADER and Hugging Face sentiment models.</p>
+        </div>
+        <div class="hero-visual" aria-hidden="true"><div class="orb orb-one"></div><div class="orb orb-two"></div><div class="signal"><i></i><i></i><i></i><i></i><i></i></div></div>
+      </section>
+
+      <section class="workspace-grid" id="analyze">
+        <article class="panel analyzer-panel">
+          <div class="panel-heading"><div><span class="eyebrow">NEW ANALYSIS</span><h2>Analyze content</h2><p>Choose a source, then run a sentiment analysis.</p></div><span class="engine-badge">NLP ENGINE</span></div>
+          <div class="source-tabs" role="tablist">
+            <button class="source-tab active" data-source="youtube" role="tab">▶ YouTube URL</button>
+            <button class="source-tab" data-source="text" role="tab">☷ Paste transcript</button>
+            <button class="source-tab" data-source="demo" role="tab">✦ Try demo</button>
+          </div>
+          <div class="form-stack">
+            <div class="field-group" id="youtubeField">
+              <label for="url">YouTube video or podcast link</label>
+              <div class="input-wrap"><span>↗</span><input id="url" type="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="url"></div>
+            </div>
+            <div class="field-group hidden" id="textField">
+              <label for="text">Transcript or spoken words</label>
+              <textarea id="text" maxlength="200000" rows="8" placeholder="Paste speech from a podcast, social post, interview, or other source..."></textarea>
+              <small><span id="charCount">0</span> / 200,000 characters</small>
+            </div>
+            <div class="form-row">
+              <div class="field-group"><label for="engine">Sentiment engine</label><select id="engine"><option value="both">VADER + Hugging Face</option><option value="vader">VADER only · fast</option><option value="huggingface">Hugging Face labels</option></select></div>
+              <button class="primary-button" id="analyzeBtn" type="button"><span>✦ Analyze sentiment</span><b>→</b></button>
+            </div>
+            <div class="form-message" id="status" role="status" aria-live="polite"><span class="message-icon">i</span><span>Ready. The Hugging Face model downloads on first use.</span></div>
+          </div>
+        </article>
+
+        <aside class="panel system-panel">
+          <div class="panel-heading compact"><div><span class="eyebrow">SYSTEM STATUS</span><h2>Analysis health</h2></div><button class="refresh-button" id="refreshStatus" aria-label="Refresh status">↻</button></div>
+          <div class="status-list">
+            <div class="status-item"><span class="status-icon success">✓</span><div><strong>VADER engine</strong><small>Available and operational</small></div><span class="status-label">ONLINE</span></div>
+            <div class="status-item"><span class="status-icon accent">✦</span><div><strong>Hugging Face</strong><small id="modelStatus">Model not loaded</small></div><span class="status-label" id="modelLabel">LAZY</span></div>
+            <div class="status-item"><span class="status-icon">↗</span><div><strong>YouTube captions</strong><small>Requires internet access</small></div><span class="status-label">READY</span></div>
+          </div>
+          <div class="tip-card"><span>💡</span><div><strong>Quick tip</strong><p>Use VADER only for rapid analysis. Combined mode compares both models.</p></div></div>
+        </aside>
+      </section>
+
+
+      <section class="dashboard-analytics" id="dashboardAnalytics" aria-label="Dashboard sentiment charts">
+        <div class="section-title"><div><span class="eyebrow">ALL-TIME ANALYTICS</span><h2>Dashboard charts</h2><p>Totals across your saved analyses. Run an analysis to update these charts.</p></div></div>
+        <div class="metric-grid">
+          <article class="metric-card"><div class="metric-top"><span>Total analyzed sources</span><i>▣</i></div><strong id="dashSources">0</strong><small>Videos and transcripts</small></article>
+          <article class="metric-card positive"><div class="metric-top"><span>Positive</span><i>↗</i></div><strong id="dashPositive">0</strong><small>Analyzed results</small></article>
+          <article class="metric-card negative"><div class="metric-top"><span>Negative</span><i>↘</i></div><strong id="dashNegative">0</strong><small>Analyzed results</small></article>
+          <article class="metric-card neutral"><div class="metric-top"><span>Neutral</span><i>○</i></div><strong id="dashNeutral">0</strong><small>Analyzed results</small></article>
+        </div>
+        <div class="chart-grid">
+          <article class="panel chart-panel"><div class="chart-heading"><div><h3>Total sentiment distribution</h3><p>Positive, negative and neutral across saved analyses</p></div><span class="chart-chip">ALL TIME</span></div><div class="chart-wrap"><canvas id="dashboardDistribution"></canvas></div></article>
+          <article class="panel chart-panel"><div class="chart-heading"><div><h3>Compound sentiment trend</h3><p>Average VADER compound score per analysis</p></div><span class="chart-chip range">-1 → +1</span></div><div class="chart-wrap"><canvas id="dashboardTrend"></canvas></div></article>
+        </div>
+        <div class="chart-grid">
+          <article class="panel chart-panel"><div class="chart-heading"><div><h3>Total analyzed by sentiment</h3><p>Count of analyzed results by category</p></div></div><div class="chart-wrap"><canvas id="dashboardTotals"></canvas></div></article>
+          <article class="panel chart-panel dashboard-summary"><div class="chart-heading"><div><h3>Analysis summary</h3><p>Saved history overview</p></div></div><div class="dashboard-summary-content"><strong id="dashSegments">0</strong><span>Total sentiment results analyzed</span><strong id="dashCompound">0.000</strong><span>Average compound across analyzed sources</span><p id="dashEmpty">No analyses yet. Analyze a YouTube video, paste a transcript, or try the demo.</p></div></article>
+        </div>
+      </section>
+
+      <section class="results-section hidden" id="results">
+        <div class="section-title"><div><span class="eyebrow">ANALYSIS RESULTS</span><h2>Sentiment overview</h2></div><div class="result-actions"><button class="secondary-button" id="copyReport">⧉ Copy report</button><button class="secondary-button" id="exportCsv">↓ Export CSV</button></div></div>
+        <section class="recent-section" id="recentSection">
+          <div class="recent-heading"><div><span class="eyebrow">RECENTLY ANALYZED</span><h3>Recent sources</h3></div><span class="recent-count" id="recentCount">0 sources</span></div>
+          <div class="recent-grid" id="recentGrid"></div>
+        </section>
+        <div class="metric-grid">
+          <article class="metric-card"><div class="metric-top"><span>Segments analyzed</span><i>Σ</i></div><strong id="total">0</strong><small id="sourceLabel">Transcript analysis</small></article>
+          <article class="metric-card positive"><div class="metric-top"><span>Positive</span><i>↗</i></div><strong id="positive">0</strong><small id="positivePct">0% of total</small></article>
+          <article class="metric-card negative"><div class="metric-top"><span>Negative</span><i>↘</i></div><strong id="negative">0</strong><small id="negativePct">0% of total</small></article>
+          <article class="metric-card neutral"><div class="metric-top"><span>Neutral</span><i>○</i></div><strong id="neutral">0</strong><small id="neutralPct">0% of total</small></article>
+        </div>
+        <div class="chart-grid">
+          <article class="panel chart-panel"><div class="chart-heading"><div><h3>Sentiment distribution</h3><p>Overall class distribution</p></div><span class="chart-chip">LIVE</span></div><div class="chart-wrap"><canvas id="distribution"></canvas></div></article>
+          <article class="panel chart-panel"><div class="chart-heading"><div><h3>Polarity timeline</h3><p>VADER compound score by segment</p></div><span class="chart-chip range">-1 → +1</span></div><div class="chart-wrap"><canvas id="timeline"></canvas></div></article>
+        </div>
+        <article class="panel table-panel">
+          <div class="table-heading"><div><h3>Whole-video analysis</h3><p>The complete transcript is evaluated as one video-level sentiment result.</p></div><label class="search-box"><span>⌕</span><input id="segmentSearch" type="search" placeholder="Search transcript"></label></div>
+          <div class="table-scroll"><table><thead><tr><th>Video</th><th>Sentiment</th><th>VADER</th><th>HF confidence</th></tr></thead><tbody id="rows"></tbody></table></div>
+          <div class="empty-state hidden" id="emptyState">No matching transcript found.</div>
+        </article>
+        <article class="panel video-panel hidden" id="videoPanel">
+          <div class="video-heading"><div><span class="eyebrow">NOW ANALYZING</span><h3 id="videoTitle">Video player</h3></div><span class="video-badge" id="videoBadge">YOUTUBE</span></div>
+          <div class="video-frame"><iframe id="videoPlayer" title="Analyzed YouTube video" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+        </article>
+      </section>
+
+      <section class="history-section hidden" id="historySection">
+        <div class="section-title"><div><span class="eyebrow">ANALYSIS HISTORY</span><h2>Previously analyzed videos</h2><p>Saved locally in this workspace.</p></div><button class="secondary-button" id="clearHistory">Clear history</button></div>
+        <div class="history-grid" id="historyGrid"></div>
+        <div class="empty-state hidden" id="historyEmpty">No previous analyses have been saved yet.</div>
+      </section>
+
+      <section class="drivers-section hidden" id="driversSection">
+        <div class="section-title"><div><span class="eyebrow">KEY SENTIMENT DRIVERS</span><h2>What moved the sentiment</h2><p>Highest-confidence positive and negative statements from the analyzed transcript.</p></div><span class="driver-badge">AI EXTRACTED</span></div>
+        <div class="drivers-grid" id="driversGrid"></div>
+      </section>
+
+      <section class="insights-section" id="insights">
+        <article class="panel insight-panel"><div class="insight-icon">✦</div><div><span class="eyebrow">AI INSIGHTS</span><h2>What the model found</h2><div id="report"></div></div></article>
+        <article class="panel insight-panel compact-panel"><span class="eyebrow">MODEL NOTE</span><h2>How to read this</h2><ul><li>Compound is a normalized score from −1 to +1.</li><li>Positive, negative, and neutral are VADER categories.</li><li>Hugging Face labels may differ from VADER.</li></ul></article>
+      </section>
+
+      <footer><span>PulseScope · Sentiment intelligence workspace</span><span>Built for clear, responsible analysis.</span></footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

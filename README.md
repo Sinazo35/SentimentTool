@@ -31,9 +31,20 @@ English text only; analyzes subtitles or pasted text, not raw audio tone. Video 
 - `static/app.js`: charts, requests, CSV export
 - `requirements.txt`: Python dependencies
 - `start_windows.bat`: Windows launcher
+- `netlify.toml`: Netlify build and routing configuration
+- `netlify/functions/app.py`: Netlify Functions adapter for Flask routes
 
 ## Suggested presentation
 Explain how captions become speech segments, VADER calculates compound and category ratios, Hugging Face independently predicts the sentiment class, and Chart.js visualizes counts and trends. Show a transcript demo if YouTube blocks a URL.
+
+## Netlify deployment
+1. Push this repository to GitHub.
+2. In Netlify, select **Add new site → Import an existing project**.
+3. Choose the repository and use the repository root as the base directory.
+4. Netlify will use `netlify.toml` automatically.
+5. Deploy. The dashboard is published from `public/`, and `/api/*` and `/health` route to the Flask Netlify Function.
+
+> Netlify Functions have an ephemeral filesystem. Analysis history is therefore not durable between deployments, and the Hugging Face model may need to download on the first cold start.
 
 
 ## Dashboard update

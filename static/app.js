@@ -78,14 +78,42 @@ function updateCharacterCount() {
 
 function getYouTubeVideoIdFromUrl(url) {
   if (!url) return "";
+
+  try {
+    const parsed = new URL(url.trim());
+    const host = parsed.hostname.toLowerCase();
+
+    if (host.includes("youtu.be")) {
+      const path = parsed.pathname.replace(/^\/+|\/+$/g, "");
+      return /^[A-Za-z0-9_-]{11}$/.test(path.split("/")[0]) ? path.split("/")[0] : "";
+    }
+
+    if (host.includes("youtube.com") || host.includes("youtube-nocookie.com")) {
+      const videoParam = parsed.searchParams.get("v");
+      if (videoParam && /^[A-Za-z0-9_-]{11}$/.test(videoParam)) return videoParam;
+
+      const path = parsed.pathname.replace(/^\/+|\/+$/g, "");
+      const match = path.match(/^(?:shorts|live|embed|v)\/([A-Za-z0-9_-]{11})$/i);
+      if (match) return match[1];
+    }
+  } catch {
+    // fall through to a regex fallback for malformed or shorthand URLs
+  }
+
   const patterns = [
-    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{11})/, 
-    /(?:youtu\.be\/)([A-Za-z0-9_-]{11})/
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/|v\/))[A-Za-z0-9_-]{11}/i,
+    /(?:youtu\.be\/)[A-Za-z0-9_-]{11}/i,
+    /(?:youtube-nocookie\.com\/embed\/)[A-Za-z0-9_-]{11}/i,
   ];
+
   for (const pattern of patterns) {
     const match = url.match(pattern);
-    if (match) return match[1];
+    if (match) {
+      const value = match[0].split("/").pop();
+      return /^[A-Za-z0-9_-]{11}$/.test(value) ? value : "";
+    }
   }
+
   return "";
 }
 

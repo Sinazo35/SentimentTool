@@ -70,20 +70,33 @@ def classify_compound(score):
 
 
 def video_id(url):
-    parsed = urlparse(url.strip())
+    if not isinstance(url, str):
+        raise ValueError("Enter a valid YouTube video link.")
+
+    raw = url.strip()
+    if not raw:
+        raise ValueError("Enter a valid YouTube video link.")
+
+    value = ""
+    parsed = urlparse(raw)
     host = (parsed.hostname or "").lower()
+
     if host in {"youtu.be", "www.youtu.be"}:
         value = parsed.path.strip("/").split("/", 1)[0]
-    elif host in {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com"}:
-        if parsed.path == "/watch":
+    elif host in {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com", "youtube-nocookie.com", "www.youtube-nocookie.com"}:
+        if parsed.path in {"/watch", "/watch/"}:
             value = parse_qs(parsed.query).get("v", [""])[0]
-        elif parsed.path.startswith(("/shorts/", "/live/", "/embed/")):
-            value = parsed.path.split("/")[2]
+        elif parsed.path.startswith(("/shorts/", "/live/", "/embed/", "/v/")):
+            value = parsed.path.strip("/").split("/", 2)[1] if parsed.path.startswith("/embed/") else parsed.path.strip("/").split("/", 1)[1]
         else:
             value = ""
-    else:
-        value = ""
-    if not re.fullmatch(r"[\w-]{11}", value):
+
+    if not value:
+        fallback = re.search(r"(?:youtube\.com/(?:watch\?v=|embed/|shorts/|live/|v/)|youtu\.be/|youtube-nocookie\.com/embed/)([A-Za-z0-9_-]{11})", raw, re.IGNORECASE)
+        if fallback:
+            value = fallback.group(1)
+
+    if not re.fullmatch(r"[A-Za-z0-9_-]{11}", value):
         raise ValueError("Enter a valid YouTube video link.")
     return value
 

@@ -55,8 +55,12 @@ function setSource(nextSource) {
     $("engine").value = "vader";
     $("url").value = "";
     $("text").value = "";
+    $("videoPanel").classList.add("hidden");
+    $("videoPlayer").src = "";
     $("status").innerHTML = '<span class="message-icon">i</span><span>Demo mode uses a built-in sample transcript with VADER.</span>';
+    return;
   }
+  if (source === "youtube") updateVideoPreview();
 }
 
 function handleYoutubeBlockedMessage(message) {
@@ -70,6 +74,33 @@ function handleYoutubeBlockedMessage(message) {
 
 function updateCharacterCount() {
   $("charCount").textContent = $("text").value.length.toLocaleString();
+}
+
+function getYouTubeVideoIdFromUrl(url) {
+  if (!url) return "";
+  const patterns = [
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{11})/, 
+    /(?:youtu\.be\/)([A-Za-z0-9_-]{11})/
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return "";
+}
+
+function updateVideoPreview() {
+  if (source !== "youtube") return;
+  const videoId = getYouTubeVideoIdFromUrl($("url").value.trim());
+  if (!videoId) {
+    $("videoPanel").classList.add("hidden");
+    $("videoPlayer").src = "";
+    return;
+  }
+  $("videoPanel").classList.remove("hidden");
+  $("videoTitle").textContent = "Video preview";
+  $("videoBadge").textContent = "YOUTUBE";
+  $("videoPlayer").src = `https://www.youtube.com/embed/${videoId}?rel=0`;
 }
 
 function setLoading(isLoading) {
@@ -294,6 +325,7 @@ function bindEvents() {
   $("copyReport").addEventListener("click", copyReport);
   $("refreshStatus").addEventListener("click", refreshStatus);
   $("clearHistory").addEventListener("click", clearHistory);
+  $("url").addEventListener("input", updateVideoPreview);
   $("text").addEventListener("input", updateCharacterCount);
   $("segmentSearch").addEventListener("input", (event) => {
     const query = event.target.value.trim().toLowerCase();

@@ -53,6 +53,8 @@ Netlify hosts the dashboard and proxies API requests to the Flask backend; it do
 
 The Netlify function forwards `/api/*` requests to the Flask service. If it is not configured, the dashboard will display a clear backend configuration error instead of a JSON parsing error.
 
+If the dashboard reports that an API returned an HTML page, the request reached a website or error page instead of the Flask API. Confirm the Render service is deployed and running, then set Netlify's `BACKEND_URL` to the service's public base URL (for example, `https://your-service.onrender.com`—not a dashboard URL and not a URL ending in `/api`). Redeploy the Netlify site after changing the variable. For local use, start `app.py` and open `http://127.0.0.1:5000` rather than opening the static HTML file directly.
+
 
 ## Dashboard update
 The Dashboard now displays all-time sentiment distribution, total analyzed results by sentiment, a compound trend chart, total analyzed sources, and total analyzed results. Data is calculated from locally saved history (up to the last 50 analyses retained by the backend). Charts begin empty and update automatically after analysis. The Results section retains charts for the selected analysis. Chart.js is loaded from a CDN, so the browser needs internet access for charts.

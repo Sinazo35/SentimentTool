@@ -26,15 +26,22 @@ exports.handler = async (event) => {
         ? Buffer.from(event.body || "", "base64")
         : event.body,
     });
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.toLowerCase().includes("json")) {
+      return jsonResponse(502, {
+        error: `The configured backend returned a non-JSON response (HTTP ${response.status}). Set BACKEND_URL to the public base URL of the running Flask backend, without an /api path, then redeploy.`,
+      });
+    }
     return {
       statusCode: response.status,
       headers: {
-        "content-type": response.headers.get("content-type") || "application/json",
+        "content-type": contentType,
         "cache-control": "no-store",
       },
       body: await response.text(),
     };
-  } catch {
+  } catch (error) {
+    console.error("Could not reach the analysis backend:", error);
     return jsonResponse(502, { error: "Could not reach the analysis backend. Check BACKEND_URL and the backend deployment." });
   }
 };

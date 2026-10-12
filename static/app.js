@@ -27,6 +27,25 @@ function showToast(message, type = "success") {
   activeToast = setTimeout(() => toast.classList.remove("show"), 3200);
 }
 
+async function requestJSON(path, options) {
+  const response = await fetch(path, options);
+  const responseText = await response.text();
+  let data;
+  try {
+    data = responseText ? JSON.parse(responseText) : null;
+  } catch {
+    if (responseText.trimStart().startsWith("<")) {
+      throw new Error("The API returned an HTML page instead of JSON. On Netlify, set BACKEND_URL to the public base URL of your running Flask backend and redeploy. For local use, start app.py and open http://127.0.0.1:5000.");
+    }
+    throw new Error(`The API returned invalid JSON (HTTP ${response.status}).`);
+  }
+  if (!response.ok) throw new Error(data?.error || `API request failed (HTTP ${response.status}).`);
+  if (!data || typeof data !== "object") {
+    throw new Error(`The API returned an empty response (HTTP ${response.status}).`);
+  }
+  return data;
+}
+
 function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
   localStorage.setItem("pulsescope-theme", theme);
@@ -210,18 +229,7 @@ async function runAnalysis() {
   setLoading(true);
   $("status").innerHTML = '<span class="message-icon">↻</span><span>Processing speech segments…</span>';
   try {
-    const response = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    const responseText = await response.text();
-    let data;
-    try {
-      data = responseText ? JSON.parse(responseText) : null;
-    } catch {
-      throw new Error(`Analysis service returned a non-JSON response (HTTP ${response.status}). Check that the backend is deployed and connected.`);
-    }
-    if (!data || typeof data !== "object") {
-      throw new Error(`Analysis service returned an empty response (HTTP ${response.status}). Check that the backend is deployed and connected.`);
-    }
-    if (!response.ok) throw new Error(data.error || "Analysis failed.");
+    const data = await requestJSON("/api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     result = data;
     renderResults();
     $("status").innerHTML = '<span class="message-icon success">✓</span><span>Analysis complete. Your dashboard has been updated.</span>';
@@ -272,13 +280,12 @@ async function copyReport() {
 
 async function refreshStatus() {
   try {
-    const response = await fetch("/api/status");
-    const status = await response.json();
+    const status = await requestJSON("/api/status");
     $("modelStatus").textContent = status.classifier === "loaded" ? "Model loaded and ready" : "Model is downloaded on demand";
     $("modelLabel").textContent = status.classifier === "loaded" ? "READY" : "LAZY";
     showToast("System status refreshed.");
-  } catch {
-    showToast("Could not reach the local server.", "error");
+  } catch (error) {
+    showToast(error.message || "Could not reach the analysis backend.", "error");
   }
 }
 
@@ -324,13 +331,12 @@ function renderHistory() {
 
 async function loadHistory() {
   try {
-    const response = await fetch("/api/history");
-    const data = await response.json();
-    history = data.history || [];
+    const data = await requestJSON("/api/history");
+    if (!Array.isArray(data.history)) throw new Error("The API returned an invalid history response.");
+    history = data.history;
     renderHistory();
-  } catch {
-    history = [];
-    renderHistory();
+  } catch (error) {
+    showToast(error.message || "Could not load analysis history.", "error");
   }
 }
 
@@ -348,11 +354,14 @@ function restoreHistory(id) {
 
 async function clearHistory() {
   if (!history.length) return;
-  history = [];
-  renderHistory();
-  const response = await fetch("/api/history", { method: "DELETE" });
-  if (!response.ok) showToast("History could not be cleared.", "error");
-  else showToast("Analysis history cleared.");
+  try {
+    await requestJSON("/api/history", { method: "DELETE" });
+    history = [];
+    renderHistory();
+    showToast("Analysis history cleared.");
+  } catch (error) {
+    showToast(error.message || "History could not be cleared.", "error");
+  }
 }
 
 function bindEvents() {

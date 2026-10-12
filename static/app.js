@@ -211,7 +211,16 @@ async function runAnalysis() {
   $("status").innerHTML = '<span class="message-icon">↻</span><span>Processing speech segments…</span>';
   try {
     const response = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    const data = await response.json();
+    const responseText = await response.text();
+    let data;
+    try {
+      data = responseText ? JSON.parse(responseText) : null;
+    } catch {
+      throw new Error(`Analysis service returned a non-JSON response (HTTP ${response.status}). Check that the backend is deployed and connected.`);
+    }
+    if (!data || typeof data !== "object") {
+      throw new Error(`Analysis service returned an empty response (HTTP ${response.status}). Check that the backend is deployed and connected.`);
+    }
     if (!response.ok) throw new Error(data.error || "Analysis failed.");
     result = data;
     renderResults();

@@ -1,0 +1,9 @@
+[build]
+  command = "mkdir -p dist/static && cp templates/index.html dist/index.html && cp static/* dist/static/"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200

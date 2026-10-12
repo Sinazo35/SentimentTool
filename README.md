@@ -44,6 +44,15 @@ Explain how captions become speech segments, VADER calculates compound and categ
 
 > The filesystem is ephemeral. Analysis history is therefore not durable between deployments, and the Hugging Face model may need to download on the first cold start.
 
+## Netlify frontend deployment
+Netlify hosts the dashboard and proxies API requests to the Flask backend; it does not run this Python app directly.
+1. Deploy the `pulse-scope` Flask service to Render using the steps above.
+2. Create a Netlify site from this repository. Netlify uses `netlify.toml` to package the dashboard and API proxy.
+3. In Netlify site settings, add the environment variable `BACKEND_URL` with the Render service's public base URL, for example `https://your-service.onrender.com` (no trailing slash).
+4. Redeploy the Netlify site so the function can use the new environment variable.
+
+The Netlify function forwards `/api/*` requests to the Flask service. If it is not configured, the dashboard will display a clear backend configuration error instead of a JSON parsing error.
+
 
 ## Dashboard update
 The Dashboard now displays all-time sentiment distribution, total analyzed results by sentiment, a compound trend chart, total analyzed sources, and total analyzed results. Data is calculated from locally saved history (up to the last 50 analyses retained by the backend). Charts begin empty and update automatically after analysis. The Results section retains charts for the selected analysis. Chart.js is loaded from a CDN, so the browser needs internet access for charts.

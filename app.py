@@ -100,11 +100,21 @@ def chunks_from_text(text):
     return chunks
 
 
+def youtube_transcript_error(exc):
+    message = str(exc).lower()
+    if any(term in message for term in ("requestblocked", "ipblocked", "blocked by youtube", "cloud provider")):
+        return (
+            "YouTube is blocking transcript requests from this deployment's IP address. "
+            "Use the Paste transcript option or deploy the app on an IP that YouTube permits."
+        )
+    return "Could not retrieve the YouTube transcript. The video may have no English captions or YouTube may be temporarily unavailable."
+
+
 def chunks_from_youtube(url):
     try:
         raw = YouTubeTranscriptApi().fetch(video_id(url), languages=["en"]).to_raw_data()
     except Exception as exc:
-        raise ValueError(f"Could not retrieve the YouTube transcript: {exc}") from exc
+        raise ValueError(youtube_transcript_error(exc)) from exc
     if not raw:
         raise ValueError("No English transcript was returned for this video.")
 

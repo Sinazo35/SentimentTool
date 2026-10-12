@@ -105,7 +105,7 @@ def youtube_transcript_error(exc):
     if any(term in message for term in ("requestblocked", "ipblocked", "blocked by youtube", "cloud provider")):
         return (
             "YouTube is blocking transcript requests from this deployment's IP address. "
-            "Use the Paste transcript option or deploy the app on an IP that YouTube permits."
+            "Use the Paste transcript option instead, or run the app on a non-blocked IP."
         )
     return "Could not retrieve the YouTube transcript. The video may have no English captions or YouTube may be temporarily unavailable."
 

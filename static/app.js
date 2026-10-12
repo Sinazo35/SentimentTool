@@ -59,6 +59,15 @@ function setSource(nextSource) {
   }
 }
 
+function handleYoutubeBlockedMessage(message) {
+  if (!message.includes("YouTube is blocking transcript requests")) return false;
+  setSource("text");
+  $("text").focus();
+  $("status").innerHTML = '<span class="message-icon error">!</span><span>YouTube is blocking transcript requests from this deployment\'s IP address. Use the Paste transcript option instead.</span>';
+  showToast("YouTube blocks this deployment IP. Use Paste transcript instead.", "error");
+  return true;
+}
+
 function updateCharacterCount() {
   $("charCount").textContent = $("text").value.length.toLocaleString();
 }
@@ -151,8 +160,13 @@ async function runAnalysis() {
     await loadHistory();
     showToast("Sentiment analysis completed.");
   } catch (error) {
-    $("status").innerHTML = `<span class="message-icon error">!</span><span>${escapeHTML(error.message)}</span>`;
-    showToast(error.message, "error");
+    const message = error.message || "Analysis failed.";
+    if (handleYoutubeBlockedMessage(message)) {
+      // keep user in paste-transcript mode with a clear recovery path
+    } else {
+      $("status").innerHTML = `<span class="message-icon error">!</span><span>${escapeHTML(message)}</span>`;
+      showToast(message, "error");
+    }
   } finally {
     setLoading(false);
   }
